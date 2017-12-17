@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -13,7 +12,7 @@ using Newtonsoft.Json;
 namespace VocaDbToIcal.Controllers {
 
 	[Route("events")]
-	public class EventsController {
+	public class EventsController : Controller {
 
 		private CalendarEvent CreateCalendarEvent(VdbEvent vdbEvent) {
 
@@ -34,7 +33,8 @@ namespace VocaDbToIcal.Controllers {
 			var client = new HttpClient();
 			var start = DateTime.Now.AddDays(-1);
 			var end = start.AddDays(8);
-			var result = await client.GetAsync("https://vocadb.net/api/releaseEvents?sort=Date&afterDate=" + start.ToString("u") + "&beforeDate=" + end.ToString("u"));
+			var url = string.Format("https://vocadb.net/api/releaseEvents?sort=Date&afterDate={0:u}&beforeDate={1:u}", start, end);
+			var result = await client.GetAsync(url);
 
 			result.EnsureSuccessStatusCode();
 
