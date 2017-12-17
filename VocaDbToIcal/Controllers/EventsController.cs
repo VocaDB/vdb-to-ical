@@ -45,7 +45,7 @@ namespace VocaDbToIcal.Controllers {
 			var str = await result.Content.ReadAsStringAsync();
 			var vbEvents = JsonConvert.DeserializeObject<PartialFindResult<VdbEvent>>(str);
 			var events = vbEvents.Items.Where(e => e.Date.HasValue).Select(CreateCalendarEvent);
-			var calendar = new Calendar { Name = "VocaDB events" };
+			var calendar = new Calendar();
 			calendar.Events.AddRange(events);
 
 			var serializer = new CalendarSerializer();
