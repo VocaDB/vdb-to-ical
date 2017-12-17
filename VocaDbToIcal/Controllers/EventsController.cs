@@ -20,7 +20,9 @@ namespace VocaDbToIcal.Controllers {
 				Start = new CalDateTime(vdbEvent.Date.Value),
 				End = new CalDateTime(vdbEvent.EndDate ?? vdbEvent.Date.Value),
 				IsAllDay = true,
-				Summary = vdbEvent.Name
+				Summary = vdbEvent.Name,
+				Location = vdbEvent.VenueName,
+				Url = new Uri(string.Format("http://vocadb.net/E/{0}/{1}", vdbEvent.Id, vdbEvent.UrlSlug))
 			};
 
 			return e;
@@ -64,9 +66,15 @@ namespace VocaDbToIcal.Controllers {
 
 		public DateTime? Date { get; set; }
 
+		public int Id { get; set; }
+
 		public string Name { get; set; }
 
 		public DateTime? EndDate { get; set; }
+
+		public string UrlSlug { get; set; }
+
+		public string VenueName { get; set; }
 
 	}
 
