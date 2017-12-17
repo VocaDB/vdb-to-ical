@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace VocaDbToIcal.Controllers {
 
-	[Route("events")]
+	[Route("")]
 	public class EventsController : Controller {
 
 		private CalendarEvent CreateCalendarEvent(VdbEvent vdbEvent) {
@@ -27,13 +27,15 @@ namespace VocaDbToIcal.Controllers {
 
 		}
 
-		[HttpGet("")]
+		[HttpGet]
+		[Route("")]
+		[Route("events")]
 		public async Task<ContentResult> GetIcal() {
 			
 			var client = new HttpClient();
 			var start = DateTime.Now.AddDays(-1);
-			var end = start.AddDays(8);
-			var url = string.Format("https://vocadb.net/api/releaseEvents?sort=Date&afterDate={0:u}&beforeDate={1:u}", start, end);
+			var end = start.AddDays(60);
+			var url = string.Format("https://vocadb.net/api/releaseEvents?sort=Date&maxResults=100&afterDate={0:u}&beforeDate={1:u}", start, end);
 			var result = await client.GetAsync(url);
 
 			result.EnsureSuccessStatusCode();
@@ -47,7 +49,8 @@ namespace VocaDbToIcal.Controllers {
 			var serializer = new CalendarSerializer();
 			var serializedCalendar = serializer.SerializeToString(calendar);
 
-			return new ContentResult {  Content = serializedCalendar, ContentType = "text/calendar" };
+			Request.HttpContext.Response.Headers.Add("Content-Disposition", "attachment; filename=\"events.ics\"");
+			return new ContentResult { Content = serializedCalendar, ContentType = "text/calendar" };
 
 		}
 
