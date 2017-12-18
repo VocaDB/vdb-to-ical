@@ -15,7 +15,7 @@ namespace VocaDbToIcal.Controllers {
 		private CalendarEvent CreateCalendarEvent(Album album) {
 
 			var e = new CalendarEvent {
-				Start = new CalDateTime(album.ReleaseDate.Formatted),
+				Start = new CalDateTime(album.ReleaseDate.Year.Value, album.ReleaseDate.Month ?? 1, album.ReleaseDate.Day ?? 1),
 				IsAllDay = true,
 				Summary = album.Name.Truncate(70),
 				Description = album.ArtistString.Truncate(60),
@@ -34,7 +34,7 @@ namespace VocaDbToIcal.Controllers {
 			var url = string.Format("https://vocadb.net/api/albums?sort=ReleaseDate&maxResults=100&releaseDateAfter={0:u}&releaseDateBefore={1:u}", start, end);
 
 			var albums = await JsonHttpClient.GetObject<PartialFindResult<Album>>(url);
-			var events = albums.Items.Where(e => !e.ReleaseDate.IsEmpty).Select(CreateCalendarEvent);
+			var events = albums.Items.Select(CreateCalendarEvent);
 
 			return CalendarResponseFactory.CreateCalendarContentResult(Response, events, "albums.ics");
 
