@@ -8,10 +8,12 @@ using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using VocaDbToIcal.AspNet;
+using VocaDbToIcal.Models;
 
 namespace VocaDbToIcal.Controllers {
 
-	[Route("")]
+	[Route("events")]
 	public class EventsController : Controller {
 
 		private CalendarEvent CreateCalendarEvent(VdbEvent vdbEvent) {
@@ -29,58 +31,19 @@ namespace VocaDbToIcal.Controllers {
 
 		}
 
-		private async Task<T> GetObject<T>(string url) {
-
-			var client = new HttpClient();
-			var result = await client.GetAsync(url);
-
-			result.EnsureSuccessStatusCode();
-
-			var str = await result.Content.ReadAsStringAsync();
-			return JsonConvert.DeserializeObject<T>(str);
-
-		}
-
-		[HttpGet]
-		[Route("events")]
+		[HttpGet("")]
 		public async Task<ContentResult> GetEvents() {
 			
 			var start = DateTime.Now.AddDays(-1);
 			var end = start.AddDays(60);
 			var url = string.Format("https://vocadb.net/api/releaseEvents?sort=Date&maxResults=100&afterDate={0:u}&beforeDate={1:u}", start, end);
 
-			var vbEvents = await GetObject<PartialFindResult<VdbEvent>>(url);
+			var vbEvents = await JsonHttpClient.GetObject<PartialFindResult<VdbEvent>>(url);
 			var events = vbEvents.Items.Where(e => e.Date.HasValue).Select(CreateCalendarEvent);
 
-			var calendar = new Calendar();
-			calendar.Events.AddRange(events);
-			var serializer = new CalendarSerializer();
-			var serializedCalendar = serializer.SerializeToString(calendar);
-
-			Request.HttpContext.Response.Headers.Add("Content-Disposition", "attachment; filename=\"events.ics\"");
-			return new ContentResult { Content = serializedCalendar, ContentType = "text/calendar" };
+			return CalendarResponseFactory.CreateCalendarContentResult(Response, events, "events.ics");
 
 		}
-
-	}
-
-	public class PartialFindResult<T> {
-		public T[] Items { get; set; }
-	}
-
-	public class VdbEvent {
-
-		public DateTime? Date { get; set; }
-
-		public int Id { get; set; }
-
-		public string Name { get; set; }
-
-		public DateTime? EndDate { get; set; }
-
-		public string UrlSlug { get; set; }
-
-		public string VenueName { get; set; }
 
 	}
 
